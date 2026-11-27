@@ -204,15 +204,17 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
 - ✅ App macOS v0.1.0 (build 1): finestra all'apertura, istanza unica, porta esclusiva, registro statusline.
 - ✅ **DMG 0.1.0 notarizzato** (Accepted, id 06371e9b) in `macos/build/release/ClaudeMeter-0.1.0.dmg`
   (non in git; rigenerabile con `scripts/release.sh`).
-- Stato sul Mac dell'utente (27/11 ore 17): LaunchAgent Python rimosso; l'app di sviluppo gira da
-  `macos/build/Claude Meter.app`; la `statusLine` punta all'helper **dentro `macos/build/Claude Meter.app`**
-  (l'utente ha cliccato "Aggiorna"). "Avvia al login" spento. Se l'app viene installata in /Applications il
-  pannello mostrerà di nuovo "Aggiorna" (percorso cambiato): è normale, basta cliccare.
+- Stato sul Mac dell'utente (27/11 ore 17:10): LaunchAgent Python rimosso; **app 0.1.0 installata in
+  `/Applications/Claude Meter.app`** dal DMG notarizzato, **"Avvia al login" attivo** (SMAppService, abilitato);
+  la `statusLine` punta a `/Applications/Claude Meter.app/Contents/MacOS/claude-meter-statusline`
+  (backup `settings.json.bak-claude-meter-20261127-170829`). La copia in `macos/build/` resta solo per
+  sviluppo: **mai aprirla insieme a quella installata** (porta USB esclusiva). Se si prova una build di
+  sviluppo, il pannello mostrerà "Aggiorna" (percorso diverso): ricordarsi di ripuntare a /Applications.
   ⚠️ `scripts/build-app.sh` cancella e ricrea `build/Claude Meter.app`: chiudere prima l'app di sviluppo.
 - Verificato: il display si aggiorna **solo da Claude Code nel terminale**; il pannello VS Code non esegue la
   statusLine. L'utente valuta `claudeCode.useTerminal`.
 - ⏭ Prossimi, da decidere con l'utente:
-  1. installare l'app in /Applications e attivare "Avvia al login";
+  1. ~~installare l'app in /Applications e attivare "Avvia al login"~~ ✅ fatto 27/11;
   2. provare il DMG su un altro Mac (kit regalo per l'amico);
   3. fonte dati per chi usa solo la chat: nessuna ufficiale; l'endpoint interno **solo con un sì esplicito**;
   4. idee firmware (touch, LED, luminosità automatica) e app (notifiche >90%). Vedi [docs/roadmap.md](docs/roadmap.md).

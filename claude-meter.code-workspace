@@ -21,5 +21,49 @@
 			"**/__pycache__": true
 		},
 		"python.defaultInterpreterPath": "${workspaceFolder:claude-meter}/host/.venv/bin/python"
+	},
+	"launch": {
+		"configurations": [
+			{
+				"type": "swift",
+				"request": "launch",
+				"args": [],
+				"cwd": "${workspaceFolder:macos (Swift app)}",
+				"name": "Debug ClaudeMeterApp (macos (Swift app))",
+				"target": "ClaudeMeterApp",
+				"configuration": "debug",
+				"preLaunchTask": "swift: Build Debug ClaudeMeterApp (macos (Swift app))"
+			},
+			{
+				"type": "swift",
+				"request": "launch",
+				"args": [],
+				"cwd": "${workspaceFolder:macos (Swift app)}",
+				"name": "Release ClaudeMeterApp (macos (Swift app))",
+				"target": "ClaudeMeterApp",
+				"configuration": "release",
+				"preLaunchTask": "swift: Build Release ClaudeMeterApp (macos (Swift app))"
+			},
+			{
+				"type": "swift",
+				"request": "launch",
+				"args": [],
+				"cwd": "${workspaceFolder:macos (Swift app)}",
+				"name": "Debug claude-meter-statusline (macos (Swift app))",
+				"target": "claude-meter-statusline",
+				"configuration": "debug",
+				"preLaunchTask": "swift: Build Debug claude-meter-statusline (macos (Swift app))"
+			},
+			{
+				"type": "swift",
+				"request": "launch",
+				"args": [],
+				"cwd": "${workspaceFolder:macos (Swift app)}",
+				"name": "Release claude-meter-statusline (macos (Swift app))",
+				"target": "claude-meter-statusline",
+				"configuration": "release",
+				"preLaunchTask": "swift: Build Release claude-meter-statusline (macos (Swift app))"
+			}
+		]
 	}
 }
