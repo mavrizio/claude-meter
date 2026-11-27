@@ -1,5 +1,7 @@
+import AppKit
 import Foundation
 import MeterCore
+import Network
 import Observation
 import ServiceManagement
 
@@ -61,6 +63,7 @@ final class AppModel: @unchecked Sendable {
     @ObservationIgnored private var nextAccountPoll = Date.distantPast
     @ObservationIgnored private var accountPolling = false
     @ObservationIgnored private var accountBackoff: TimeInterval = 120
+    @ObservationIgnored private let pathMonitor = NWPathMonitor()
 
     /// The statusLine helper sits next to the app executable (Contents/MacOS, or .build/debug in dev).
     static var helperPath: String {
@@ -85,6 +88,17 @@ final class AppModel: @unchecked Sendable {
             self?.link = s
         }
         device.start()
+        // At login the first fetch often runs before Wi-Fi is up, and after sleep the data is stale:
+        // fetch again as soon as the network comes back and right after wake.
+        pathMonitor.pathUpdateHandler = { [weak self] path in
+            guard path.status == .satisfied else { return }
+            DispatchQueue.main.async { self?.pollAccountSoon(after: 2) }
+        }
+        pathMonitor.start(queue: .global(qos: .utility))
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.pollAccountSoon(after: 5)
+        }
         refreshSetup()
         launchAtLogin = SMAppService.mainApp.status == .enabled
         tick()
@@ -136,6 +150,14 @@ final class AppModel: @unchecked Sendable {
         }
     }
 
+    /// Brings the next account fetch forward (never later than already planned).
+    private func pollAccountSoon(after delay: TimeInterval) {
+        guard useAccountUsage else { return }
+        let fresh = account.map { Date().timeIntervalSince($0.fetchedAt) < 60 } ?? false
+        guard !fresh else { return } // just fetched: no need
+        nextAccountPoll = min(nextAccountPoll, Date().addingTimeInterval(delay))
+    }
+
     private func accountDidFetch(_ result: Result<AccountUsage, AccountUsageError>) {
         accountPolling = false
         guard useAccountUsage else { return } // switched off while the request was running
@@ -147,16 +169,30 @@ final class AppModel: @unchecked Sendable {
         case let .failure(e):
             accountError = e
             NSLog("claude-meter account usage: %@", String(describing: e)) // never contains the token
-            // back off on errors (up to 15 min); expired token: wait for Claude Code to refresh it
-            accountBackoff = min(accountBackoff * 2, max(15 * 60, accountInterval))
         }
-        nextAccountPoll = Date().addingTimeInterval(accountError == nil ? accountInterval : accountBackoff)
+        nextAccountPoll = Date().addingTimeInterval(retryDelay(after: result))
         tick()
     }
 
     func refreshSetup() {
         guard live else { return }
         setup = ClaudeSettings.status(helper: Self.helperPath)
+    }
+
+    /// When to try again. Local problems retry soon and never escalate; only the service's own
+    /// refusals back off (doubling up to 15 min), so we never hammer the endpoint.
+    private func retryDelay(after result: Result<AccountUsage, AccountUsageError>) -> TimeInterval {
+        switch result {
+        case .success:
+            return accountInterval
+        case .failure(.network):
+            return 30                      // offline / Wi-Fi not up yet (the path monitor may come first)
+        case .failure(.tokenExpired), .failure(.noCredentials):
+            return 60                      // keychain only, no request: resumes as soon as Claude Code refreshes
+        case .failure:
+            accountBackoff = min(accountBackoff * 2, max(15 * 60, accountInterval))
+            return accountBackoff
+        }
     }
 
     // MARK: actions

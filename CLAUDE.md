@@ -55,8 +55,10 @@ scheda/app ogni secondo. Per un utente **solo chat** non c'è oggi una fonte uff
   **Regole**: mai rinnovare il token (il refresh lo ruota e scollegherebbe Claude Code: se è scaduto si
   aspetta che lo rinnovi Claude Code, dura ~6–8 h), mai salvarlo né loggarlo, inviarlo solo ad
   api.anthropic.com. Non documentato: può cambiare; possibile attrito con i termini consumer (spiegato
-  all'utente). **Spenta di default**; intervallo scelto nel pannello (1–30 min, default 2); errori con
-  backoff fino a 15 min. I dati del conto sostituiscono solo le due finestre finché sono freschi
+  all'utente). **Spenta di default**; intervallo scelto nel pannello (1–30 min, default 2). Ritentativi (0.2.1):
+  rete assente → 30 s (al login il Wi-Fi arriva dopo l'app: con il backoff della 0.2.0 i dati restavano
+  vecchi minuti), token scaduto/assente → 60 s (solo portachiavi), rifiuti del servizio → backoff fino a
+  15 min; richiesta immediata quando torna la rete (`NWPathMonitor`) e al risveglio dallo stop. I dati del conto sostituiscono solo le due finestre finché sono freschi
   (max(10 min, 2,5 × intervallo)); modello/contesto/costo/righe/"attivo" restano dalla statusLine.
   Codice: `MeterCore/AccountUsage.swift`, `AppModel.pollAccountIfDue`. Per l'amico "solo chat" serve
   comunque Claude Code installato e collegato (e usato ogni tanto, per il rinnovo del token).
@@ -232,6 +234,7 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
 - ✅ Repo GitHub **privato** `mavrizio/claude-meter`.
 - ✅ App macOS v0.1.0 (build 1): finestra all'apertura, istanza unica, porta esclusiva, registro statusline.
 - ✅ App macOS **v0.2.0** (build 2): opzione sperimentale "Limiti dal tuo account" + intervallo regolabile.
+- ✅ App macOS **v0.2.1** (build 3): ritentativi rapidi dopo login/risveglio/rete assente.
 - ✅ **DMG 0.2.0 notarizzato** (27/11, Accepted, id 83acf0bc) in `macos/build/release/ClaudeMeter-0.2.0.dmg`
   (non in git; `scripts/release.sh` lo rigenera e **cancella** `build/release/`, quindi anche i DMG
   precedenti). Il Leggimi spiega la privacy dell'opzione account.
