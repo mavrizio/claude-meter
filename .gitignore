@@ -7,3 +7,4 @@ compile_commands.json
 macos/.build/
 macos/build/
 .swiftpm/
+.cache/

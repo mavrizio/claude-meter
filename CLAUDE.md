@@ -101,8 +101,10 @@ La scheda considera il link perso dopo 8 s senza messaggi.
 - LCD ILI9341 (driver TFT_eSPI `ILI9341_2_DRIVER`), SPI su HSPI: MISO 12, MOSI 13, SCLK 14, CS 15, DC 2,
   RST −1, backlight GPIO 21 (HIGH = acceso). SPI 40 MHz (se schermo bianco: scendere a 27 MHz).
   Rotazione 1 = orizzontale. Verificato dall'utente: orientamento e colori corretti.
-- Touch XPT2046 (non ancora usato): CLK 25, MOSI 32, MISO 39, CS 33, IRQ 36 (bus SPI separato).
-- LED RGB on-board attivo basso: R 4, G 16, B 17 (spenti a HIGH al boot).
+- Touch XPT2046: CLK 25, MOSI 32, MISO 39, CS 33, IRQ 36 (bus SPI separato, VSPI). Driver nostro in
+  `src/touch.cpp`: solo pressione (Z), niente coordinate né calibrazione; IRQ non usato.
+- LED RGB on-board attivo basso: R 4, G 16, B 17. PWM LEDC canali 1–3 (il canale 0 resta per la
+  retroilluminazione). Il verde domina: l'ambra è quasi tutto rosso.
 - LDR (sensore luce) su GPIO 34 (non ancora usato).
 
 ## Firmware (`firmware/`)
@@ -112,7 +114,12 @@ La scheda considera il link perso dopo 8 s senza messaggi.
 - Librerie: TFT_eSPI 2.5.43 (configurata tutta da `build_flags`, nessun User_Setup.h), **LVGL 9.3.0**,
   ArduinoJson 7.2.1. Config LVGL minimale in `include/lv_conf.h`.
 - `src/main.cpp`: display/flush LVGL, parser seriale NDJSON, stato `UiData`, timeout link.
-- `src/ui.cpp` / `include/ui.h`: tutta la grafica. Archi 270° (135°→45°) range 0..1000, due archi "glow"
+- `src/led.cpp`: LED come allarme sulla % peggiore fra 5h e 7d: spento <75%, ambra fisso 75–90%, rosso che
+  "respira" ≥90%; spento se il Mac non è collegato. Soglie/intensità in costanti in cima al file.
+- `src/touch.cpp`: un tocco ovunque → `ui_next_page()` (isteresi sulla pressione, 350 ms di blocco).
+- `src/ui.cpp` / `include/ui.h`: tutta la grafica. Due pagine a tutto schermo che scorrono sotto l'header
+  fisso (pallini pagina al centro): **Archi** e **Dettaglio** (per finestra: ora esatta del reset, ritmo e
+  scarto +/−, proiezione lineare "100% alle HH:MM" / "~N% al reset", barra con tacca del ritmo). Archi 270° (135°→45°) range 0..1000, due archi "glow"
   semitrasparenti sotto a quello principale, colore sfumato verde→ambra→rosso (`level_color`),
   animazioni ease-in-out 900 ms, animazione intro (sweep 0→100→valore).
 - Font: Montserrat built-in 12/14/16/20/40 — **contengono solo ASCII + simboli LV_SYMBOL**: niente lettere
@@ -149,6 +156,9 @@ Decodificare un crash: catturare il "Backtrace:" dalla seriale e
    `pio run -t upload` fallisce con "Resource busy" → prima "Sospendi collegamento".
    Su macOS 26 le finestre delle icone di stato appartengono a "Control Centre": CGWindowList non dice di chi sono.
    Mai usare `osascript ... keystroke` nei test: richiede Accessibilità e colpisce l'app in primo piano.
+8. **LVGL: contenitori `LV_SIZE_CONTENT` in flex non sempre si ridimensionano** al cambio del testo dei figli:
+   nel fw 0.2.0 modello e ora nell'header venivano tagliati a sinistra. Header e pallini ora hanno
+   dimensioni fisse. Per elementi allineati a destra usare un box di larghezza fissa.
 7. Certificato Developer ID usato: scade **01/02/2027** → rinnovarlo prima delle release successive.
 5. `FileManager.homeDirectoryForCurrentUser` **ignora `$HOME`**: un test con `HOME=/tmp/x` aveva scritto dati
    finti nel vero `~/.claude-meter/state.json`. `MeterPaths.home` ora usa `$HOME`. Nei test usare sempre
@@ -199,6 +209,7 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
 ## Stato attuale (27 nov 2026)
 
 - ✅ Firmware v0.1.0 funzionante sulla scheda, grafica approvata dall'utente.
+- ✅ Firmware **v0.2.0** (27/11) sulla scheda: LED allarme + touch con pagina Dettaglio, verificato dall'utente.
 - ✅ Dati reali collegati e verificati dall'utente (prima con Python).
 - ✅ Repo GitHub **privato** `mavrizio/claude-meter`.
 - ✅ App macOS v0.1.0 (build 1): finestra all'apertura, istanza unica, porta esclusiva, registro statusline.
@@ -217,7 +228,7 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
   1. ~~installare l'app in /Applications e attivare "Avvia al login"~~ ✅ fatto 27/11;
   2. provare il DMG su un altro Mac (kit regalo per l'amico);
   3. fonte dati per chi usa solo la chat: nessuna ufficiale; l'endpoint interno **solo con un sì esplicito**;
-  4. idee firmware (touch, LED, luminosità automatica) e app (notifiche >90%). Vedi [docs/roadmap.md](docs/roadmap.md).
+  4. idee firmware (~~touch, LED~~ ✅ 0.2.0; prossima: luminosità automatica) e app (notifiche >90%). Vedi [docs/roadmap.md](docs/roadmap.md).
 
 ## Convenzioni
 

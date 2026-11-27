@@ -69,10 +69,11 @@ Nota: la statusLine è aggiornata dalla CLI `claude`; da verificare se anche l'e
 
 ## 4. Firmware — idee
 
-- [ ] **Touch** (XPT2046) per cambiare schermata: dettaglio sessione, storico, impostazioni luminosità.
-- [ ] **LED RGB** come allarme discreto (ambra >75%, rosso >90%), con PWM basso.
+- [x] **Touch** (XPT2046) per cambiare schermata — fw 0.2.0: tocco = pagina Dettaglio. Da fare: storico,
+  impostazioni luminosità, silenziare il LED.
+- [x] **LED RGB** come allarme discreto (ambra >75%, rosso >90%), con PWM basso — fw 0.2.0.
 - [ ] **Retroilluminazione automatica** con LDR su GPIO 34; spegnimento quando il Mac è assente da molto.
-- [ ] Proiezione: "a questo ritmo arrivi al 100% alle 15:40".
+- [x] Proiezione: "a questo ritmo arrivi al 100% alle 15:40" — nella pagina Dettaglio (fw 0.2.0).
 - [ ] Font personalizzati (lv_font_conv) con lettere accentate.
 - [ ] **WiFi** come trasporto alternativo (il Mac invia in LAN, discovery mDNS) — l'utente per ora va bene con USB.
 - [ ] **OTA** dalle release GitHub (richiede WiFi e partizioni con due slot app).

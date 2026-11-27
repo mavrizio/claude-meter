@@ -5,14 +5,13 @@
 #include <TFT_eSPI.h>
 #include <lvgl.h>
 
+#include "led.h"
+#include "touch.h"
 #include "ui.h"
 
-#define FW_VERSION "0.1.0"
+#define FW_VERSION "0.2.0"
 static const uint16_t SCR_W = 320, SCR_H = 240;
 static const uint32_t LINK_TIMEOUT_MS = 8000;
-
-// CYD on-board RGB LED (active low)
-static const int LED_R = 4, LED_G = 16, LED_B = 17;
 
 static TFT_eSPI tft;
 static uint16_t buf1[SCR_W * 24], buf2[SCR_W * 24];
@@ -98,10 +97,8 @@ void setup() {
   Serial.setRxBufferSize(2048);
   Serial.begin(115200);
 
-  for (int p : {LED_R, LED_G, LED_B}) {
-    pinMode(p, OUTPUT);
-    digitalWrite(p, HIGH); // off
-  }
+  led_init();
+  touch_init();
 
   tft.begin();
   tft.setRotation(1); // landscape, USB on the right
@@ -119,6 +116,7 @@ void setup() {
 
 void loop() {
   poll_serial();
+  if (touch_tapped()) ui_next_page();
 
   static uint32_t last_tick = 0, last_hello = 0;
   uint32_t ms = millis();
@@ -130,6 +128,11 @@ void loop() {
       ui_update(data);
     }
     ui_tick(now_epoch(), tz_off, data);
+  }
+  static uint32_t last_led = 0;
+  if (ms - last_led >= 20) {
+    last_led = ms;
+    led_update(data, now_epoch());
   }
 #ifdef CM_DEBUG_HEAP
   static uint32_t last_dbg = 0;
