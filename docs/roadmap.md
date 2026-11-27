@@ -17,7 +17,7 @@ Fatto: MenuBarExtra, pannello con anelli, collegamento USB con handshake, config
 helper Swift, avvio al login, sospensione, demo, icona, build-app.sh, 9 test.
 Da fare:
 - [x] `scripts/release.sh`: universale, firma Developer ID, DMG con Leggimi (provato con --no-notarize).
-- [ ] Prima notarizzazione vera e prova del DMG su un altro utente/Mac.
+- [x] Prima notarizzazione (27/11, ClaudeMeter-0.1.0.dmg, Accepted, id 06371e9b). [ ] Prova del DMG su un altro Mac.
 - [ ] Verificare il pulsante "Aggiorna/Configura" del pannello (il 27/11 settings.json non è cambiato).
 - [ ] Installazione in /Applications e prova dell'avvio al login sul Mac di Maurizio.
 - [ ] Notifica quando un limite supera 90% (UserNotifications).
