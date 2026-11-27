@@ -70,3 +70,12 @@ per 45 s di animazioni continue. Lasciata la build `-DCM_DEBUG_HEAP` per diagnos
 - Migrazione sul Mac di Maurizio: LaunchAgent Python fermato e plist rimosso; app avviata da
   `macos/build/`, collegata al display (hello in ~4 s). statusLine ancora sullo script Python finché
   l'utente non clicca "Aggiorna" nel pannello.
+
+### release.sh e la chat dentro VS Code
+- `release.sh` creato sul modello di sdclone; scelta del certificato per hash perché nel portachiavi ci sono
+  due "Developer ID Application: Maurizio Tolfa" identici. DMG universale firmato, provato senza notarizzare.
+- Maurizio usa soprattutto **la chat di Claude Code dentro VS Code** (il pannello dell'estensione).
+  Verifica: dopo la cancellazione di state.json, decine di risposte nel pannello VS Code non l'hanno ricreato
+  → il pannello non sembra eseguire la statusLine (da confermare con una sessione nuova). I transcript
+  `~/.claude/projects/*.jsonl` non contengono i rate limit. Soluzione proposta: `claudeCode.useTerminal`.
+- Il pulsante "Aggiorna" del pannello non ha modificato settings.json (nessun nuovo backup): da chiarire.

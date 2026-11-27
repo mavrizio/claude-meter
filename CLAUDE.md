@@ -48,6 +48,14 @@ scheda/app ogni secondo. Per un utente **solo chat** non c'è oggi una fonte uff
   credenziali dell'utente, possibile conflitto con i termini consumer. **Non implementato**; decisione
   rimandata all'utente (vedi docs/roadmap.md).
 
+**Estensione VS Code**: il pannello grafico di Claude Code in VS Code **sembra non eseguire la statusLine**
+(27/11: decine di risposte in una sessione VS Code non hanno ricreato state.json; sessione però avviata prima
+della configurazione → da confermare con una sessione nuova). La documentazione non ne parla. Gli hook invece
+girano anche nell'estensione, ma il loro payload non contiene `rate_limits`. Il `/usage` del pannello è
+calcolato in locale e non è leggibile da programmi. Soluzione documentata: impostazione VS Code
+`claudeCode.useTerminal` ("Use Terminal") → Claude Code gira come CLI nel terminale integrato e la statusLine
+funziona.
+
 - **Fonte dati**: il comando `statusLine` di Claude Code riceve su stdin un JSON con `rate_limits`.
   Nessuna API Anthropic, nessun token: i dati esistono solo sul Mac dove gira Claude Code.
 - `rate_limits.five_hour` / `rate_limits.seven_day`: `used_percentage` (0–100, float) e `resets_at`
@@ -141,7 +149,9 @@ Swift Package (swift-tools 5.9, macOS 14+), modellato su `../sdclone`.
   `beginActivity` evita App Nap. `NSLog("claude-meter link: …")` per i cambi di stato del collegamento.
 - `scripts/build-app.sh` → `build/Claude Meter.app` (bundle id `com.mavrizio.claudemeter`; firma ad-hoc,
   oppure `SIGN_ID=… UNIVERSAL=1` per Developer ID). `scripts/make-icon.swift` → `Resources/AppIcon.icns`.
-  Manca ancora `scripts/release.sh` (DMG + notarizzazione): copiarlo da `../sdclone/scripts/release.sh`.
+  `scripts/release.sh [--no-notarize]` → `build/release/ClaudeMeter-<ver>.dmg` universale, firmato, con
+  Leggimi.txt; notarizza col profilo `sdclone-notary`. Nel portachiavi ci sono **due** certificati Developer ID
+  con lo stesso nome: lo script sceglie per hash SHA-1 quello che scade più tardi (il nome sarebbe ambiguo).
 
 ```bash
 cd macos

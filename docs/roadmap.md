@@ -16,7 +16,9 @@ L'app ha fonti modulari (state.json oggi): aggiungerne una non richiede di riscr
 Fatto: MenuBarExtra, pannello con anelli, collegamento USB con handshake, configurazione guidata statusLine,
 helper Swift, avvio al login, sospensione, demo, icona, build-app.sh, 9 test.
 Da fare:
-- [ ] `scripts/release.sh`: universale, firma Developer ID, DMG, notarizzazione (copiare da ../sdclone).
+- [x] `scripts/release.sh`: universale, firma Developer ID, DMG con Leggimi (provato con --no-notarize).
+- [ ] Prima notarizzazione vera e prova del DMG su un altro utente/Mac.
+- [ ] Verificare il pulsante "Aggiorna/Configura" del pannello (il 27/11 settings.json non è cambiato).
 - [ ] Installazione in /Applications e prova dell'avvio al login sul Mac di Maurizio.
 - [ ] Notifica quando un limite supera 90% (UserNotifications).
 - [ ] Concatenare una statusLine preesistente invece di sostituirla.
