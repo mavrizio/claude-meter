@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+firmware/.pio/
+firmware/.vscode/
+.DS_Store
+compile_commands.json

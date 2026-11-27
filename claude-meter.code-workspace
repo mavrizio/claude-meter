@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"name": "claude-meter",
+			"path": "."
+		},
+		{
+			"name": "firmware (PlatformIO)",
+			"path": "firmware"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.pio": true,
+			"**/.venv": true,
+			"**/__pycache__": true
+		},
+		"python.defaultInterpreterPath": "${workspaceFolder:claude-meter}/host/.venv/bin/python"
+	}
+}
