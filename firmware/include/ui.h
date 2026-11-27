@@ -23,3 +23,5 @@ void ui_init();
 void ui_update(const UiData &d);                          // new data arrived
 void ui_tick(uint32_t now_epoch, int32_t tz, const UiData &d); // ~2x per second
 void ui_next_page();                                       // touch: gauges <-> detail
+void ui_set_muted(bool muted);                             // mute icon in the header
+void ui_toast(const char *text);                           // short message, hides by itself

@@ -39,7 +39,8 @@ struct Detail {
 
 static Gauge g_fh, g_sd;
 static Detail d_fh, d_sd;
-static lv_obj_t *lbl_model, *lbl_clock, *dot;
+static lv_obj_t *lbl_model, *lbl_clock, *dot, *lbl_mute, *toast;
+static lv_timer_t *toast_timer;
 static lv_obj_t *stats, *lbl_msg, *bar_ctx, *lbl_ctx, *lbl_cost, *lbl_add, *lbl_rem;
 static bool intro_done = false;
 
@@ -435,6 +436,9 @@ void ui_init() {
   lv_obj_set_style_bg_opa(logo, LV_OPA_COVER, 0);
   lv_obj_t *title = mk_label(scr, &lv_font_montserrat_14, C_TEXT, "claude meter");
   lv_obj_set_pos(title, 28, 5);
+  lbl_mute = mk_label(scr, &lv_font_montserrat_14, C_MUTED, LV_SYMBOL_MUTE);
+  lv_obj_set_pos(lbl_mute, 130, 5);
+  lv_obj_add_flag(lbl_mute, LV_OBJ_FLAG_HIDDEN);
 
   // Fixed size, items packed to the right: a content-sized box did not grow
   // when the model/clock text changed, clipping them on the left.
@@ -519,6 +523,18 @@ void ui_init() {
   lbl_add = mk_label(lines, &lv_font_montserrat_14, C_GREEN, "");
   lbl_rem = mk_label(lines, &lv_font_montserrat_14, C_RED, "");
 
+  // toast on the top layer, above both pages
+  toast = mk_label(lv_layer_top(), &lv_font_montserrat_16, C_TEXT, "");
+  lv_obj_set_style_bg_color(toast, C_SURFACE, 0);
+  lv_obj_set_style_bg_opa(toast, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_color(toast, C_DIM, 0);
+  lv_obj_set_style_border_width(toast, 1, 0);
+  lv_obj_set_style_radius(toast, 12, 0);
+  lv_obj_set_style_pad_hor(toast, 16, 0);
+  lv_obj_set_style_pad_ver(toast, 10, 0);
+  lv_obj_align(toast, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_add_flag(toast, LV_OBJ_FLAG_HIDDEN);
+
   UiData empty;
   ui_update(empty);
   intro_start();
@@ -592,4 +608,24 @@ void ui_next_page() {
   slide(pages[from], lv_obj_get_x(pages[from]), -SCR_W);
   slide(pages[to], SCR_W, 0);
   page_dots_update();
+}
+
+void ui_set_muted(bool muted) {
+  if (muted) lv_obj_remove_flag(lbl_mute, LV_OBJ_FLAG_HIDDEN);
+  else lv_obj_add_flag(lbl_mute, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void toast_hide(lv_timer_t *t) {
+  lv_obj_add_flag(toast, LV_OBJ_FLAG_HIDDEN);
+  toast_timer = nullptr; // one-shot timer deletes itself
+}
+
+void ui_toast(const char *text) {
+  lv_label_set_text(toast, text);
+  lv_obj_remove_flag(toast, LV_OBJ_FLAG_HIDDEN);
+  if (toast_timer) lv_timer_reset(toast_timer);
+  else {
+    toast_timer = lv_timer_create(toast_hide, 1600, nullptr);
+    lv_timer_set_repeat_count(toast_timer, 1);
+  }
 }

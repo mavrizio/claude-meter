@@ -35,17 +35,36 @@ static float window_pct(const UiWindow &w, uint32_t now) {
   return w.pct;
 }
 
+// 0 = no alarm, 1 = amber, 2 = red
+static int g_level = 0, g_muted_level = 0;
+
 void led_update(const UiData &d, uint32_t now) {
   float worst = 0;
   if (d.connected && d.have_data) worst = fmaxf(window_pct(d.fh, now), window_pct(d.sd, now));
+  g_level = worst >= RED_PCT ? 2 : worst >= AMBER_PCT ? 1 : 0;
 
-  if (worst >= RED_PCT) {
+  // re-arm when the alarm clears or gets worse
+  if (g_muted_level && (g_level == 0 || g_level > g_muted_level)) g_muted_level = 0;
+
+  if (g_level == 0 || g_muted_level) {
+    set_rgb(0, 0, 0);
+  } else if (g_level == 2) {
     float ph = (float)(millis() % BREATH_MS) / BREATH_MS;
     float k = 0.5f - 0.5f * cosf(2.f * (float)M_PI * ph); // 0..1..0
     set_rgb((uint8_t)(RED_MIN + k * k * (RED_MAX - RED_MIN)), 0, 0);
-  } else if (worst >= AMBER_PCT) {
-    set_rgb(AMBER_R, AMBER_G, 0);
   } else {
-    set_rgb(0, 0, 0);
+    set_rgb(AMBER_R, AMBER_G, 0);
   }
 }
+
+MuteResult led_toggle_mute() {
+  if (g_muted_level) {
+    g_muted_level = 0;
+    return MUTE_OFF;
+  }
+  if (g_level == 0) return MUTE_NOTHING;
+  g_muted_level = g_level;
+  return MUTE_ON;
+}
+
+bool led_muted() { return g_muted_level != 0; }

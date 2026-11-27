@@ -116,7 +116,10 @@ La scheda considera il link perso dopo 8 s senza messaggi.
 - `src/main.cpp`: display/flush LVGL, parser seriale NDJSON, stato `UiData`, timeout link.
 - `src/led.cpp`: LED come allarme sulla % peggiore fra 5h e 7d: spento <75%, ambra fisso 75–90%, rosso che
   "respira" ≥90%; spento se il Mac non è collegato. Soglie/intensità in costanti in cima al file.
-- `src/touch.cpp`: un tocco ovunque → `ui_next_page()` (isteresi sulla pressione, 350 ms di blocco).
+  **Tocco lungo** = silenzia l'allarme attuale (icona nell'header + messaggio); si riarma da solo se peggiora
+  (ambra→rosso) o se torna <75%; un altro tocco lungo lo riattiva.
+- `src/touch.cpp`: `touch_poll()` → TAP (al rilascio) = `ui_next_page()`, LONG (0,8 s, mentre è premuto) =
+  silenzia LED. Isteresi sulla pressione, 350 ms di blocco fra tap.
 - `src/ui.cpp` / `include/ui.h`: tutta la grafica. Due pagine a tutto schermo che scorrono sotto l'header
   fisso (pallini pagina al centro): **Archi** e **Dettaglio** (per finestra: ora esatta del reset, ritmo e
   scarto +/−, proiezione lineare "100% alle HH:MM" / "~N% al reset", barra con tacca del ritmo). Archi 270° (135°→45°) range 0..1000, due archi "glow"
@@ -209,7 +212,8 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
 ## Stato attuale (27 nov 2026)
 
 - ✅ Firmware v0.1.0 funzionante sulla scheda, grafica approvata dall'utente.
-- ✅ Firmware **v0.2.0** (27/11) sulla scheda: LED allarme + touch con pagina Dettaglio, verificato dall'utente.
+- ✅ Firmware **v0.2.1** (27/11) sulla scheda: LED allarme (silenziabile col tocco lungo) + touch con pagina
+  Dettaglio, verificato dall'utente. Luminosità automatica scartata (LDR inutilizzabile, vedi roadmap).
 - ✅ Dati reali collegati e verificati dall'utente (prima con Python).
 - ✅ Repo GitHub **privato** `mavrizio/claude-meter`.
 - ✅ App macOS v0.1.0 (build 1): finestra all'apertura, istanza unica, porta esclusiva, registro statusline.
@@ -228,7 +232,7 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
   1. ~~installare l'app in /Applications e attivare "Avvia al login"~~ ✅ fatto 27/11;
   2. provare il DMG su un altro Mac (kit regalo per l'amico);
   3. fonte dati per chi usa solo la chat: nessuna ufficiale; l'endpoint interno **solo con un sì esplicito**;
-  4. idee firmware (~~touch, LED~~ ✅ 0.2.0; prossima: luminosità automatica) e app (notifiche >90%). Vedi [docs/roadmap.md](docs/roadmap.md).
+  4. idee firmware (~~touch, LED, silenzia LED~~ ✅ 0.2.x; luminosità automatica scartata) e app (notifiche >90%). Vedi [docs/roadmap.md](docs/roadmap.md).
 
 ## Convenzioni
 

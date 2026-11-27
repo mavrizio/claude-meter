@@ -70,7 +70,7 @@ Nota: la statusLine è aggiornata dalla CLI `claude`; da verificare se anche l'e
 ## 4. Firmware — idee
 
 - [x] **Touch** (XPT2046) per cambiare schermata — fw 0.2.0: tocco = pagina Dettaglio. Da fare: storico,
-  impostazioni luminosità, silenziare il LED.
+  impostazioni. Tocco lungo = silenzia il LED (fw 0.2.1).
 - [x] **LED RGB** come allarme discreto (ambra >75%, rosso >90%), con PWM basso — fw 0.2.0.
 - [—] **Retroilluminazione automatica** con LDR su GPIO 34 — **scartata dall'utente** (27/11, "non mi serve").
   Misurato: l'LDR legge 0–13 (su 4095, ADC a 0 dB) sia con luce normale sia con la scheda coperta e lo

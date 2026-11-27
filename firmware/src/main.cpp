@@ -9,7 +9,7 @@
 #include "touch.h"
 #include "ui.h"
 
-#define FW_VERSION "0.2.0"
+#define FW_VERSION "0.2.1"
 static const uint16_t SCR_W = 320, SCR_H = 240;
 static const uint32_t LINK_TIMEOUT_MS = 8000;
 
@@ -116,7 +116,20 @@ void setup() {
 
 void loop() {
   poll_serial();
-  if (touch_tapped()) ui_next_page();
+  switch (touch_poll()) {
+  case TOUCH_TAP:
+    ui_next_page();
+    break;
+  case TOUCH_LONG:
+    switch (led_toggle_mute()) {
+    case MUTE_ON: ui_toast(LV_SYMBOL_MUTE "  LED silenziato"); break;
+    case MUTE_OFF: ui_toast(LV_SYMBOL_BELL "  LED riattivato"); break;
+    default: ui_toast("Nessun allarme attivo"); break;
+    }
+    break;
+  default:
+    break;
+  }
 
   static uint32_t last_tick = 0, last_hello = 0;
   uint32_t ms = millis();
@@ -133,6 +146,11 @@ void loop() {
   if (ms - last_led >= 20) {
     last_led = ms;
     led_update(data, now_epoch());
+    static bool muted_shown = false;
+    if (led_muted() != muted_shown) { // also catches the automatic re-arm
+      muted_shown = led_muted();
+      ui_set_muted(muted_shown);
+    }
   }
 #ifdef CM_DEBUG_HEAP
   static uint32_t last_dbg = 0;
