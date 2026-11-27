@@ -249,7 +249,8 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
   statusLine. L'utente valuta `claudeCode.useTerminal`.
 - ⏭ Prossimi, da decidere con l'utente:
   1. ~~installare l'app in /Applications e attivare "Avvia al login"~~ ✅ fatto 27/11;
-  2. provare il DMG su un altro Mac (kit regalo per l'amico);
+  2. **dal 27/11 l'utente prova l'app 0.2.1 + firmware 0.2.1 per qualche giorno**; se non ci sono intoppi,
+     provare il DMG 0.2.1 su un altro Mac (kit regalo per l'amico). Alla ripresa chiedere com'è andata;
   3. ~~fonte dati per chi usa solo la chat~~ ✅ opzione "Limiti dal tuo account" nell'app 0.2.0;
   4. idee firmware (~~touch, LED, silenzia LED~~ ✅ 0.2.x; luminosità automatica scartata) e app (notifiche >90%). Vedi [docs/roadmap.md](docs/roadmap.md).
 
