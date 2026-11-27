@@ -48,6 +48,13 @@ scheda/app ogni secondo. Per un utente **solo chat** non c'è oggi una fonte uff
   credenziali dell'utente, possibile conflitto con i termini consumer. **Non implementato**; decisione
   rimandata all'utente (vedi docs/roadmap.md).
 
+**Valori "vecchi"**: ogni sessione passa i `rate_limits` della **sua** ultima risposta API. Una sessione nel
+terminale ferma da mezz'ora, rieseguita per un evento (es. cambio del comando statusLine), riscrive valori di
+mezz'ora prima (27/11: 11% mostrato contro 26% reale in Claude Desktop). Gli orari di reset invece sono giusti.
+Diagnosi: l'helper scrive una riga per chiamata in `~/.claude-meter/statusline.log`
+(ora, session_id, version, 5h, 7d); l'`entrypoint` della sessione (`cli` o `claude-vscode`) si legge nel
+transcript `~/.claude/projects/<progetto>/<session_id>.jsonl`.
+
 **Estensione VS Code**: il pannello grafico di Claude Code in VS Code **sembra non eseguire la statusLine**
 (27/11: decine di risposte in una sessione VS Code non hanno ricreato state.json; sessione però avviata prima
 della configurazione → da confermare con una sessione nuova). La documentazione non ne parla. Gli hook invece
