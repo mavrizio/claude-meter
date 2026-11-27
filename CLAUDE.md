@@ -48,6 +48,13 @@ scheda/app ogni secondo. Per un utente **solo chat** non c'è oggi una fonte uff
   credenziali dell'utente, possibile conflitto con i termini consumer. **Non implementato**; decisione
   rimandata all'utente (vedi docs/roadmap.md).
 
+**Cache di Claude Desktop (verificate 27/11)**: `Local Storage/leveldb` non contiene dati d'uso; `fcache` (binario,
+non JSON) e il blob IndexedDB di claude.ai (compresso, contiene chiavi `seven_day_opus`…) hanno dati d'uso ma
+sono aggiornati di rado (fermi alle 16:17, insieme all'ultimo campione di plan-usage-history.json, anche dopo
+aver aperto la pagina Usage alle ~16:55). Formati interni e fragili: non usarli come fonte in tempo reale.
+**Blink non fa meglio**: stessa statusLine (solo CLI), hook per la sola "luce di attività", queste cache di
+Desktop, e opzionale `claude -p /usage` periodico (lui stesso lo segnala come possibile violazione dei termini).
+
 **Valori "vecchi"**: ogni sessione passa i `rate_limits` della **sua** ultima risposta API. Una sessione nel
 terminale ferma da mezz'ora, rieseguita per un evento (es. cambio del comando statusLine), riscrive valori di
 mezz'ora prima (27/11: 11% mostrato contro 26% reale in Claude Desktop). Gli orari di reset invece sono giusti.

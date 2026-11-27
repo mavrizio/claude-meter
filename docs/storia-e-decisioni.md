@@ -79,3 +79,7 @@ per 45 s di animazioni continue. Lasciata la build `-DCM_DEBUG_HEAP` per diagnos
   → il pannello non sembra eseguire la statusLine (da confermare con una sessione nuova). I transcript
   `~/.claude/projects/*.jsonl` non contengono i rate limit. Soluzione proposta: `claudeCode.useTerminal`.
 - Il pulsante "Aggiorna" del pannello non ha modificato settings.json (nessun nuovo backup): da chiarire.
+- Confermato dall'utente: il display si aggiorna **solo da Claude Code nel terminale**; il pannello grafico di
+  VS Code non esegue la statusLine. Verificate le cache di Claude Desktop (Local Storage, fcache, IndexedDB):
+  aggiornate di rado, formati interni → scartate. Blink non ha una fonte migliore (stessa statusLine + cache
+  Desktop + `claude -p /usage` opzionale e a rischio termini). Suggerito `claudeCode.useTerminal`.
