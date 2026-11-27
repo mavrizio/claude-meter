@@ -36,9 +36,3 @@ enum Snapshot {
         exit(0)
     }
 }
-
-final class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        if Snapshot.requested { Snapshot.run(model: AppModel.shared) }
-    }
-}

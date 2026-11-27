@@ -4,7 +4,12 @@ import SwiftUI
 @main
 struct ClaudeMeterApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
-    @State private var model = AppModel.shared
+    @State private var model: AppModel
+
+    init() {
+        SingleInstance.enforce() // before AppModel opens the USB port
+        _model = State(initialValue: AppModel.shared)
+    }
 
     var body: some Scene {
         MenuBarExtra {

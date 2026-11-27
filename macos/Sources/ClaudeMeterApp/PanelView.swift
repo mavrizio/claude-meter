@@ -5,11 +5,19 @@ import SwiftUI
 /// The window that drops down from the menu bar icon.
 struct PanelView: View {
     @Environment(AppModel.self) private var model
+    var inWindow = false
 
     var body: some View {
         @Bindable var model = model
         VStack(alignment: .leading, spacing: 14) {
             header
+            if inWindow {
+                Label("Claude Meter vive nella barra dei menu, in alto a destra. Puoi chiudere questa finestra: continua a funzionare. Per riaprirla, apri di nuovo l'app.",
+                      systemImage: "menubar.arrow.up.rectangle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if model.setup != .ours { SetupCard() }
 
             HStack(spacing: 22) {

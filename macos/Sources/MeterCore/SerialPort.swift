@@ -25,7 +25,12 @@ public final class SerialPort {
         t.c_cflag &= ~tcflag_t(CRTSCTS)
         guard tcsetattr(fd, TCSANOW, &t) == 0 else { let e = errno; close(); throw SerialError.config(e) }
         tcflush(fd, TCIOFLUSH)
+        // Exclusive access: other processes (a second app instance, pio upload, meterd.py) get EBUSY
+        // instead of silently sharing — and resetting — the board.
+        guard ioctl(fd, SerialPort.TIOCEXCL) == 0 else { let e = errno; close(); throw SerialError.open(e) }
     }
+
+    static let TIOCEXCL: UInt = 0x2000_740D // _IO('t', 13), not imported into Swift
 
     deinit { close() }
 
