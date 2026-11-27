@@ -151,6 +151,15 @@ pio run -t upload --upload-port /dev/cu.wchusbserial11240  # flash
 PLATFORMIO_BUILD_FLAGS="-DCM_DEBUG_HEAP" pio run -t upload # build con telemetria heap ogni 1 s su seriale
 pio run -t compiledb                                       # rigenera compile_commands.json per clangd
 ```
+**Firmware per le release** (un solo file da caricare a **0x0**, anche dal browser con esptool-js), stessi
+indirizzi del caricamento PlatformIO, verificato caricandolo sulla scheda il 27/11:
+```bash
+~/.platformio/penv/bin/python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
+  -o ../macos/build/release/claude-meter-firmware-<ver>.bin --flash_mode dio --flash_freq 40m --flash_size 4MB \
+  0x1000 .pio/build/cyd/bootloader.bin 0x8000 .pio/build/cyd/partitions.bin \
+  0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
+  0x10000 .pio/build/cyd/firmware.bin
+```
 Il daemon (LaunchAgent) tiene occupata la porta: per flashare fermarlo prima
 (`launchctl bootout gui/$(id -u)/com.claude-meter.meterd`) e poi rilanciare `host/install.sh`
 (o `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.claude-meter.meterd.plist`).
@@ -237,6 +246,9 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
 - ✅ App macOS v0.1.0 (build 1): finestra all'apertura, istanza unica, porta esclusiva, registro statusline.
 - ✅ App macOS **v0.2.0** (build 2): opzione sperimentale "Limiti dal tuo account" + intervallo regolabile.
 - ✅ App macOS **v0.2.1** (build 3): ritentativi rapidi dopo login/risveglio/rete assente.
+- ✅ **Release GitHub v0.2.1** (27/11): https://github.com/mavrizio/claude-meter/releases/tag/v0.2.1 con DMG,
+  firmware unico e `.sha256` (riscaricati e verificati). Procedura: `release.sh` → firmware unico (sopra) →
+  `shasum` → `gh release create vX.Y.Z --target main --notes-file … <file>`; note in italiano.
 - ✅ **DMG 0.2.1 notarizzato** (27/11, Accepted, id 5151f0cd) in `macos/build/release/ClaudeMeter-0.2.1.dmg`
   (non in git; `scripts/release.sh` lo rigenera e **cancella** `build/release/`, quindi anche i DMG
   precedenti). Il Leggimi spiega la privacy dell'opzione account.
