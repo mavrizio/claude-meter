@@ -44,9 +44,22 @@ risposta successiva di Claude Code. Conto alla rovescia, ritmo e azzeramento al 
 scheda/app ogni secondo. Per un utente **solo chat** non c'è oggi una fonte ufficiale. Valutate:
 - `~/Library/Application Support/Claude/plan-usage-history.json` (Claude Desktop): `{"version":2,"samples":[{"t":ms,"org":…,"u":{"fh":7,"sd":11}}]}`
   — senza credenziali ma solo 1–2 campioni al giorno e nessun `resets_at`: insufficiente per il tempo reale.
-- endpoint interno di claude.ai/Claude Code per l'utilizzo: tempo reale ma non documentato, richiede le
-  credenziali dell'utente, possibile conflitto con i termini consumer. **Non implementato**; decisione
-  rimandata all'utente (vedi docs/roadmap.md).
+- **Fonte "Limiti dal tuo account" (sperimentale, app 0.2.0, sì esplicito dell'utente il 27/11)**:
+  `GET https://api.anthropic.com/api/oauth/usage` con `Authorization: Bearer <token OAuth di Claude Code>` e
+  `anthropic-beta: oauth-2025-04-20`. Risposta: `five_hour`/`seven_day` = `{"utilization":44.0,
+  "resets_at":"2026-11-27T20:00:00.05+00:00"}` (+ molti campi null/interni, `seven_day_breakdown` per
+  Claude Code/Chat/Cowork). Stessi numeri di `/usage` e claude.ai: **include chat, Desktop, telefono e il
+  pannello VS Code**. Token dal portachiavi, voce `Claude Code-credentials` (`{"claudeAiOauth":{accessToken,
+  refreshToken,expiresAt(ms),subscriptionType,…}}`), letto con **`/usr/bin/security`** (già autorizzato
+  sulla voce: nessun prompt, e l'autorizzazione non si perde quando Claude Code riscrive la voce).
+  **Regole**: mai rinnovare il token (il refresh lo ruota e scollegherebbe Claude Code: se è scaduto si
+  aspetta che lo rinnovi Claude Code, dura ~6–8 h), mai salvarlo né loggarlo, inviarlo solo ad
+  api.anthropic.com. Non documentato: può cambiare; possibile attrito con i termini consumer (spiegato
+  all'utente). **Spenta di default**; intervallo scelto nel pannello (1–30 min, default 2); errori con
+  backoff fino a 15 min. I dati del conto sostituiscono solo le due finestre finché sono freschi
+  (max(10 min, 2,5 × intervallo)); modello/contesto/costo/righe/"attivo" restano dalla statusLine.
+  Codice: `MeterCore/AccountUsage.swift`, `AppModel.pollAccountIfDue`. Per l'amico "solo chat" serve
+  comunque Claude Code installato e collegato (e usato ogni tanto, per il rinnovo del token).
 
 **Cache di Claude Desktop (verificate 27/11)**: `Local Storage/leveldb` non contiene dati d'uso; `fcache` (binario,
 non JSON) e il blob IndexedDB di claude.ai (compresso, contiene chiavi `seven_day_opus`…) hanno dati d'uso ma
@@ -170,7 +183,8 @@ Decodificare un crash: catturare il "Backtrace:" dalla seriale e
 ## App macOS (`macos/`)
 
 Swift Package (swift-tools 5.9, macOS 14+), modellato su `../sdclone`.
-- `Sources/MeterCore/` (libreria, testata): `UsageState` (state.json + parsing del payload statusLine, conserva
+- `Sources/MeterCore/` (libreria, testata): `AccountUsage` (fonte sperimentale dal conto, vedi sopra),
+  `UsageState` (state.json + parsing del payload statusLine, conserva
   i limiti precedenti validi), `DeviceMessage` (riga NDJSON + `key` senza campi temporali), `SerialPort`
   (termios raw 115200, `rank()` scarta il gemello `cu.usbserial-X` se c'è `cu.wchusbserialX`), `DeviceLink`
   (thread in background: apre una porta, **parla solo dopo l'hello** del firmware, porte mute saltate per 60 s,
@@ -190,7 +204,7 @@ Swift Package (swift-tools 5.9, macOS 14+), modellato su `../sdclone`.
 
 ```bash
 cd macos
-swift build && swift test                       # 9 test MeterCore
+swift build && swift test                       # 13 test MeterCore
 scripts/build-app.sh                            # crea build/Claude Meter.app
 open "build/Claude Meter.app"
 .build/debug/ClaudeMeterApp --snapshot /tmp/p   # PNG del pannello (chiaro/scuro) con dati demo, senza USB
@@ -231,7 +245,7 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
 - ⏭ Prossimi, da decidere con l'utente:
   1. ~~installare l'app in /Applications e attivare "Avvia al login"~~ ✅ fatto 27/11;
   2. provare il DMG su un altro Mac (kit regalo per l'amico);
-  3. fonte dati per chi usa solo la chat: nessuna ufficiale; l'endpoint interno **solo con un sì esplicito**;
+  3. ~~fonte dati per chi usa solo la chat~~ ✅ opzione "Limiti dal tuo account" nell'app 0.2.0;
   4. idee firmware (~~touch, LED, silenzia LED~~ ✅ 0.2.x; luminosità automatica scartata) e app (notifiche >90%). Vedi [docs/roadmap.md](docs/roadmap.md).
 
 ## Convenzioni

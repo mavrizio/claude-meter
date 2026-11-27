@@ -101,4 +101,52 @@ final class MeterCoreTests: XCTestCase {
         XCTAssertThrowsError(try ClaudeSettings.install(helper: "x", url: url))
         XCTAssertEqual(try Data(contentsOf: url), original)
     }
+
+    // MARK: account usage (experimental source)
+
+    let usageJSON = """
+    {"five_hour":{"utilization":44.0,"resets_at":"2026-11-27T20:00:00.050625+00:00","limit_dollars":null},
+     "seven_day":{"utilization":16.0,"resets_at":"2026-12-02T16:00:00+00:00"},
+     "seven_day_opus":null,"extra_usage":{"is_enabled":false}}
+    """
+
+    func testParsesAccountUsage() throws {
+        let a = try AccountUsage.parse(Data(usageJSON.utf8), fetchedAt: now)
+        XCTAssertEqual(a.fiveHour, UsageWindow(pct: 44, resetsAt: 1_795_809_600)) // 20:00:00.05 rounds down
+        XCTAssertEqual(a.sevenDay, UsageWindow(pct: 16, resetsAt: 1_796_227_200))
+    }
+
+    func testAccountWindowWithoutResetIsAbsent() throws {
+        let json = #"{"five_hour":{"utilization":0,"resets_at":null},"seven_day":null}"#
+        let a = try AccountUsage.parse(Data(json.utf8), fetchedAt: now)
+        XCTAssertNil(a.fiveHour)
+        XCTAssertNil(a.sevenDay)
+        XCTAssertThrowsError(try AccountUsage.parse(Data("[]".utf8), fetchedAt: now))
+    }
+
+    func testParsesClaudeCodeToken() {
+        let json = #"{"claudeAiOauth":{"accessToken":"tok","refreshToken":"r","expiresAt":1800000600000}}"#
+        let t = ClaudeCodeToken.parse(Data(json.utf8))
+        XCTAssertEqual(t?.accessToken, "tok")
+        XCTAssertEqual(t?.isUsable(at: now), true)
+        XCTAssertEqual(t?.isUsable(at: now.addingTimeInterval(590)), false) // < 60 s left
+        XCTAssertNil(ClaudeCodeToken.parse(Data(#"{"claudeAiOauth":{}}"#.utf8)))
+    }
+
+    func testCombinedPrefersFreshAccountWindows() {
+        let file = UsageState.from(payload: payload(), previous: nil, now: now)
+        let acc = AccountUsage(fiveHour: UsageWindow(pct: 50, resetsAt: 1_800_007_000), sevenDay: nil, fetchedAt: now)
+        let s = UsageState.combined(file: file, account: acc, now: now.addingTimeInterval(60))
+        XCTAssertEqual(s?.fiveHour?.pct, 50)
+        XCTAssertNil(s?.sevenDay)           // the account is authoritative while fresh
+        XCTAssertEqual(s?.model, "Opus")    // everything else stays from Claude Code
+        XCTAssertEqual(s?.updatedAt, file.updatedAt)
+
+        let stale = UsageState.combined(file: file, account: acc, now: now.addingTimeInterval(11 * 60))
+        XCTAssertEqual(stale, file)
+
+        let onlyAccount = UsageState.combined(file: nil, account: acc, now: now)
+        XCTAssertEqual(onlyAccount?.fiveHour?.pct, 50)
+        XCTAssertEqual(onlyAccount?.updatedAt, 0) // no fake "Claude is active" on the display
+    }
 }

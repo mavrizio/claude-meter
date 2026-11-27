@@ -3,9 +3,10 @@ import MeterCore
 import Observation
 import ServiceManagement
 
-/// App state. Everything here runs on the main thread (timer + main-queue callbacks).
+/// App state. Everything here runs on the main thread (timer + main-queue callbacks); background
+/// work (account fetch) only hops back through DispatchQueue.main, hence @unchecked Sendable.
 @Observable
-final class AppModel {
+final class AppModel: @unchecked Sendable {
     static let shared = AppModel(live: !Snapshot.requested)
 
     private(set) var state: UsageState?
@@ -21,12 +22,45 @@ final class AppModel {
         didSet { UserDefaults.standard.set(showPercentInMenuBar, forKey: "showPercent") }
     }
 
+    /// Experimental: take the 5h/7d limits from the account (see MeterCore/AccountUsage.swift).
+    var useAccountUsage: Bool = UserDefaults.standard.bool(forKey: "useAccountUsage") {
+        didSet {
+            UserDefaults.standard.set(useAccountUsage, forKey: "useAccountUsage")
+            account = nil
+            accountError = nil
+            nextAccountPoll = .distantPast
+            tick()
+        }
+    }
+    /// How often the account is polled (minutes); longer = fewer requests to the undocumented endpoint.
+    var accountIntervalMinutes: Int = UserDefaults.standard.object(forKey: "accountIntervalMin") as? Int ?? 2 {
+        didSet {
+            UserDefaults.standard.set(accountIntervalMinutes, forKey: "accountIntervalMin")
+            accountBackoff = accountInterval
+            // apply now: next poll one interval after the last fetch
+            nextAccountPoll = (account?.fetchedAt ?? .distantPast).addingTimeInterval(accountInterval)
+            tick()
+        }
+    }
+    static let accountIntervalChoices = [1, 2, 5, 10, 15, 30]
+    var accountInterval: TimeInterval { TimeInterval(max(accountIntervalMinutes, 1) * 60) }
+    /// Account data older than this falls back to the statusLine (a couple of missed polls).
+    var accountMaxAge: TimeInterval { max(10 * 60, accountInterval * 2.5) }
+
+    /// Last successful account fetch (nil = none yet / feature off) and last error, for the panel.
+    private(set) var account: AccountUsage?
+    private(set) var accountError: AccountUsageError?
+
     @ObservationIgnored private let live: Bool
     @ObservationIgnored private let device = DeviceLink()
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var stateMTime: Date?
     @ObservationIgnored private let demoStart = Date()
     @ObservationIgnored private var activity: NSObjectProtocol?
+    @ObservationIgnored private var fileState: UsageState?
+    @ObservationIgnored private var nextAccountPoll = Date.distantPast
+    @ObservationIgnored private var accountPolling = false
+    @ObservationIgnored private var accountBackoff: TimeInterval = 120
 
     /// The statusLine helper sits next to the app executable (Contents/MacOS, or .build/debug in dev).
     static var helperPath: String {
@@ -67,6 +101,9 @@ final class AppModel {
             state = DemoData.state(start: demoStart, now: now)
         } else {
             reloadStateIfChanged()
+            pollAccountIfDue()
+            state = UsageState.combined(file: fileState, account: useAccountUsage ? account : nil, now: now,
+                                        maxAge: accountMaxAge)
         }
         device.setMessage(DeviceMessage.build(state: state, now: now))
     }
@@ -76,7 +113,45 @@ final class AppModel {
         let mtime = (try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date
         guard mtime != stateMTime else { return }
         stateMTime = mtime
-        state = mtime == nil ? nil : UsageState.load(from: url)
+        fileState = mtime == nil ? nil : UsageState.load(from: url)
+    }
+
+    /// True when the gauges currently show account data (fresh fetch, feature on).
+    var showsAccountUsage: Bool {
+        guard useAccountUsage, !demo, let a = account else { return false }
+        return now.timeIntervalSince(a.fetchedAt) <= accountMaxAge
+    }
+
+    private func pollAccountIfDue() {
+        guard live, useAccountUsage, !accountPolling, now >= nextAccountPoll else { return }
+        accountPolling = true
+        Task.detached {
+            let result: Result<AccountUsage, AccountUsageError>
+            do { result = .success(try await AccountUsageClient.fetch()) } catch let e as AccountUsageError {
+                result = .failure(e)
+            } catch {
+                result = .failure(.network(error.localizedDescription))
+            }
+            DispatchQueue.main.async { [weak self] in self?.accountDidFetch(result) }
+        }
+    }
+
+    private func accountDidFetch(_ result: Result<AccountUsage, AccountUsageError>) {
+        accountPolling = false
+        guard useAccountUsage else { return } // switched off while the request was running
+        switch result {
+        case let .success(a):
+            account = a
+            accountError = nil
+            accountBackoff = accountInterval
+        case let .failure(e):
+            accountError = e
+            NSLog("claude-meter account usage: %@", String(describing: e)) // never contains the token
+            // back off on errors (up to 15 min); expired token: wait for Claude Code to refresh it
+            accountBackoff = min(accountBackoff * 2, max(15 * 60, accountInterval))
+        }
+        nextAccountPoll = Date().addingTimeInterval(accountError == nil ? accountInterval : accountBackoff)
+        tick()
     }
 
     func refreshSetup() {

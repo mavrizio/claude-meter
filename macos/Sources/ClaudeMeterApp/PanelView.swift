@@ -54,6 +54,7 @@ struct PanelView: View {
 
             Toggle("Avvia al login", isOn: Binding(get: { model.launchAtLogin }, set: { model.setLaunchAtLogin($0) }))
             Toggle("Percentuali nella barra dei menu", isOn: $model.showPercentInMenuBar)
+            AccountUsageSetting()
 
             HStack {
                 Button(model.paused ? "Riprendi collegamento" : "Sospendi collegamento") { model.paused.toggle() }
@@ -102,8 +103,15 @@ struct PanelView: View {
         let f = RelativeDateTimeFormatter()
         f.locale = Locale(identifier: "it_IT")
         f.unitsStyle = .full
-        let when = f.localizedString(for: s.updatedDate, relativeTo: model.now)
-        return ["Aggiornato da Claude Code \(when)", s.model].compactMap { $0 }.joined(separator: " · ")
+        var lines: [String] = []
+        if model.showsAccountUsage, let a = model.account {
+            lines.append("Limiti dal tuo account, \(f.localizedString(for: a.fetchedAt, relativeTo: model.now))")
+        }
+        if s.updatedAt > 0 {
+            let when = f.localizedString(for: s.updatedDate, relativeTo: model.now)
+            lines.append(["Aggiornato da Claude Code \(when)", s.model].compactMap { $0 }.joined(separator: " · "))
+        }
+        return lines.joined(separator: "\n")
     }
 }
 
@@ -204,5 +212,44 @@ struct SetupCard: View {
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Palette.accent.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+/// Opt-in for the experimental account source, with its current status.
+struct AccountUsageSetting: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        VStack(alignment: .leading, spacing: 3) {
+            Toggle("Limiti dal tuo account (sperimentale)", isOn: $model.useAccountUsage)
+                .help("Legge le percentuali come /usage di Claude Code, da un servizio Anthropic non documentato, "
+                    + "usando l'accesso di Claude Code salvato nel portachiavi. Il token non viene mai salvato "
+                    + "ne' rinnovato. Se il servizio cambia, si torna ai dati della barra di stato.")
+            Text(caption.text)
+                .font(.caption)
+                .foregroundStyle(caption.warning ? Palette.amber.color : .secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if model.useAccountUsage {
+                Picker("Controlla ogni", selection: $model.accountIntervalMinutes) {
+                    ForEach(AppModel.accountIntervalChoices, id: \.self) { m in
+                        Text(m == 1 ? "1 minuto" : "\(m) minuti").tag(m)
+                    }
+                }
+                .pickerStyle(.menu)
+                .fixedSize()
+                .padding(.top, 2)
+            }
+        }
+    }
+
+    private var caption: (text: String, warning: Bool) {
+        guard model.useAccountUsage else {
+            return ("Include l'uso da chat, app Desktop e telefono. Usa l'accesso di Claude Code a un servizio non documentato.", false)
+        }
+        if let e = model.accountError { return (e.message, true) }
+        guard let a = model.account else { return ("Richiesta in corso...", false) }
+        let t = a.fetchedAt.formatted(date: .omitted, time: .shortened)
+        return ("Aggiornati alle \(t). Includono chat, app e telefono.", false)
     }
 }

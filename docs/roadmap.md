@@ -1,6 +1,6 @@
 # Roadmap
 
-## 0. Fonte dati per chi usa solo la chat (decisione aperta)
+## 0. Fonte dati per chi usa solo la chat (decisa: C, opzionale)
 
 L'amico a cui regalare il display usa quasi solo la chat (claude.ai / app Desktop), quindi la statusLine di
 Claude Code non parte mai. Opzioni (dettagli in CLAUDE.md, "Limite importante"):
@@ -10,6 +10,9 @@ Claude Code non parte mai. Opzioni (dettagli in CLAUDE.md, "Limite importante"):
 - **C. Endpoint interno di utilizzo** usato dalle app Anthropic: tempo reale, ma non documentato, richiede le
   credenziali dell'utente e l'uso automatico potrebbe violare i termini consumer. Blink lo evita.
 L'app ha fonti modulari (state.json oggi): aggiungerne una non richiede di riscrivere UI o protocollo.
+
+**Decisione 27/11**: l'utente ha scelto C come **opzione sperimentale spenta di default** ("Limiti dal tuo
+account" nel pannello, intervallo regolabile). Implementata nell'app 0.2.0; dettagli e regole in CLAUDE.md.
 
 ## 1. App macOS "Claude Meter" — v0.1.0 fatta, da rifinire
 
