@@ -62,13 +62,26 @@ Requisiti lato amico: macOS 14+, **Claude Code CLI** con abbonamento Pro/Max/Ult
 chiave API). Driver CH340: incluso in macOS (compare come `/dev/cu.usbserial-*`), niente da installare.
 Nota: la statusLine è aggiornata dalla CLI `claude`; da verificare se anche l'estensione VS Code la esegue.
 
-## 3. Distribuzione e aggiornamenti
+## 3. Distribuzione e aggiornamenti — **da fare prima del kit regalo**
 
-- Repo `mavrizio/claude-meter` è **privato**: gli amici non possono scaricarne le release.
-  Opzioni: repo pubblico separato solo per i binari (es. `claude-meter-releases`), oppure rendere pubbliche
-  solo le release. Da decidere.
-- GitHub Actions: compilare il firmware (`pio run`) e allegare `firmware.bin` alle release.
-- Aggiornamento app: Sparkle o controllo manuale dell'ultima release.
+Deciso il 27/11: un solo canale di aggiornamento, **il firmware viaggia dentro l'app**. Va fatto prima di
+consegnare la seconda unità, altrimenti ogni correzione richiede di riprendere Mac o scheda dell'amico.
+
+- [ ] **Aggiornamento app con Sparkle 2** (pacchetto SwiftPM): l'app legge un feed pubblico (appcast),
+  propone "È disponibile la versione X", scarica, verifica firma EdDSA + notarizzazione, sostituisce e riavvia.
+  Chiave EdDSA generata una volta (privata nel portachiavi, pubblica in Info.plist). `release.sh` genera il
+  feed (`generate_appcast`). Opzione nel pannello per disattivare il controllo; citarlo nel Leggimi (privacy).
+- [ ] **Firmware dentro l'app**: `firmware.bin` in `Contents/Resources`; il display dichiara la versione
+  nell'hello; se è più vecchia il pannello mostra "Aggiorna il display" e l'app la carica via USB con il
+  protocollo del ROM bootloader ESP32 (scritto in Swift, nessun esptool/Python sull'altro Mac). Reset in
+  bootloader via DTR/RTS. Sicuro: il ROM bootloader non si cancella, un caricamento interrotto si ripete.
+  Serve solo l'app a 0x10000 se bootloader e partizioni non cambiano. Nessuna OTA Wi-Fi: `huge_app.csv` va bene.
+- [ ] **Dove pubblicare** DMG e feed: il repo `mavrizio/claude-meter` è privato e un'app installata altrove
+  non può leggerlo. Opzioni: rendere pubblico il repo (l'utente è favorevole, 27/11) oppure un repo pubblico
+  separato solo per le release (`claude-meter-releases`).
+- [ ] GitHub Actions (facoltativo): compilare firmware e app ad ogni tag. La notarizzazione richiede le
+  credenziali Apple: più semplice continuare a fare le release in locale con `release.sh`.
+- Stima: ~mezza giornata Sparkle, ~1 giornata caricamento firmware dall'app.
 
 ## 4. Firmware — idee
 
