@@ -7,12 +7,17 @@
 		{
 			"name": "firmware (PlatformIO)",
 			"path": "firmware"
+		},
+		{
+			"name": "macos (Swift app)",
+			"path": "macos"
 		}
 	],
 	"settings": {
 		"files.exclude": {
 			"**/.pio": true,
 			"**/.venv": true,
+			"**/.build": true,
 			"**/__pycache__": true
 		},
 		"python.defaultInterpreterPath": "${workspaceFolder:claude-meter}/host/.venv/bin/python"

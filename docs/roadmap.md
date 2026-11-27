@@ -1,6 +1,29 @@
 # Roadmap
 
-## 1. App macOS "Claude Meter" (prossimo passo)
+## 0. Fonte dati per chi usa solo la chat (decisione aperta)
+
+L'amico a cui regalare il display usa quasi solo la chat (claude.ai / app Desktop), quindi la statusLine di
+Claude Code non parte mai. Opzioni (dettagli in CLAUDE.md, "Limite importante"):
+- **A. Solo Claude Code** (attuale, ufficiale): per lui il display resterebbe vuoto.
+- **B. Storico locale di Claude Desktop** (`plan-usage-history.json`): niente credenziali, ma campioni rari e
+  senza orario di reset. Al massimo come indicazione "ultimo valore noto".
+- **C. Endpoint interno di utilizzo** usato dalle app Anthropic: tempo reale, ma non documentato, richiede le
+  credenziali dell'utente e l'uso automatico potrebbe violare i termini consumer. Blink lo evita.
+L'app ha fonti modulari (state.json oggi): aggiungerne una non richiede di riscrivere UI o protocollo.
+
+## 1. App macOS "Claude Meter" — v0.1.0 fatta, da rifinire
+
+Fatto: MenuBarExtra, pannello con anelli, collegamento USB con handshake, configurazione guidata statusLine,
+helper Swift, avvio al login, sospensione, demo, icona, build-app.sh, 9 test.
+Da fare:
+- [ ] `scripts/release.sh`: universale, firma Developer ID, DMG, notarizzazione (copiare da ../sdclone).
+- [ ] Installazione in /Applications e prova dell'avvio al login sul Mac di Maurizio.
+- [ ] Notifica quando un limite supera 90% (UserNotifications).
+- [ ] Concatenare una statusLine preesistente invece di sostituirla.
+- [ ] Rilevare inserimento/rimozione USB con IOKit invece del polling ogni 1–2 s.
+- [ ] Aggiornamento firmware via USB dall'app.
+
+### Progetto originale (riferimento)
 
 Obiettivo: poter regalare il dispositivo a un amico con Mac e Claude Pro/Max **senza Python, terminale o script**.
 Modello: il progetto `../sdclone` (Swift Package, SwiftUI, `scripts/build-app.sh`, `scripts/release.sh` con

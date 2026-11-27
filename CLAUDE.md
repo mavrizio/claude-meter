@@ -22,13 +22,31 @@ L'utente (Maurizio) scrive in italiano: rispondere in italiano. Progetto hobbist
 ## Architettura
 
 ```
-Claude Code ──stdin JSON──► host/statusline.py ──► ~/.claude-meter/state.json
-                                                         │
-                         host/meterd.py (LaunchAgent) ◄──┘  legge ogni ~0.2 s
+Claude Code ──stdin JSON──► claude-meter-statusline (Swift, dentro l'app)  ──► ~/.claude-meter/state.json
+                            [oppure host/statusline.py, versione Python]            │
+                                                                                    │ mtime ogni 1 s
+                         Claude Meter.app (barra dei menu, macos/) ◄────────────────┘
+                         [oppure host/meterd.py, versione Python]
                                    │ USB seriale 115200, NDJSON
                                    ▼
                          ESP32 firmware (LVGL) ──► LCD 320x240
 ```
+
+Due implementazioni lato Mac, **stesso formato di state.json e stesso protocollo**:
+- `macos/` — **app ufficiale** (Swift/SwiftUI), quella da usare e da regalare.
+- `host/` — versione Python originale: utile per sviluppo (`meterd.py --demo`), non più installata.
+**Mai farle girare insieme**: si contendono la porta USB.
+
+### Limite importante: chi usa solo la chat
+I percentuali arrivano **solo** quando Claude Code riceve una risposta (la statusLine gira solo allora).
+L'uso fatto su claude.ai / app Desktop / telefono consuma gli stessi limiti ma il display lo vede solo alla
+risposta successiva di Claude Code. Conto alla rovescia, ritmo e azzeramento al reset sono calcolati dalla
+scheda/app ogni secondo. Per un utente **solo chat** non c'è oggi una fonte ufficiale. Valutate:
+- `~/Library/Application Support/Claude/plan-usage-history.json` (Claude Desktop): `{"version":2,"samples":[{"t":ms,"org":…,"u":{"fh":7,"sd":11}}]}`
+  — senza credenziali ma solo 1–2 campioni al giorno e nessun `resets_at`: insufficiente per il tempo reale.
+- endpoint interno di claude.ai/Claude Code per l'utilizzo: tempo reale ma non documentato, richiede le
+  credenziali dell'utente, possibile conflitto con i termini consumer. **Non implementato**; decisione
+  rimandata all'utente (vedi docs/roadmap.md).
 
 - **Fonte dati**: il comando `statusLine` di Claude Code riceve su stdin un JSON con `rate_limits`.
   Nessuna API Anthropic, nessun token: i dati esistono solo sul Mac dove gira Claude Code.
@@ -102,8 +120,39 @@ Decodificare un crash: catturare il "Backtrace:" dalla seriale e
    (gitignored, 13 MB, rigenerabile con `pio run -t compiledb`).
 4. Aprire la seriale resetta l'ESP32 (circuito auto-reset su DTR/RTS): il daemon deve restare connesso;
    impostare `dtr=False, rts=False` prima di `open()`.
+5. `FileManager.homeDirectoryForCurrentUser` **ignora `$HOME`**: un test con `HOME=/tmp/x` aveva scritto dati
+   finti nel vero `~/.claude-meter/state.json`. `MeterPaths.home` ora usa `$HOME`. Nei test usare sempre
+   una HOME temporanea **e verificare** che `~/.claude-meter/` reale non cambi.
 
-## Host (`host/`)
+## App macOS (`macos/`)
+
+Swift Package (swift-tools 5.9, macOS 14+), modellato su `../sdclone`.
+- `Sources/MeterCore/` (libreria, testata): `UsageState` (state.json + parsing del payload statusLine, conserva
+  i limiti precedenti validi), `DeviceMessage` (riga NDJSON + `key` senza campi temporali), `SerialPort`
+  (termios raw 115200, `rank()` scarta il gemello `cu.usbserial-X` se c'è `cu.wchusbserialX`), `DeviceLink`
+  (thread in background: apre una porta, **parla solo dopo l'hello** del firmware, porte mute saltate per 60 s,
+  invia al cambio o ogni 2 s, pausa), `ClaudeSettings` (stato/installa/rimuove `statusLine` con backup;
+  JSON non valido = mai toccato), `MeterFormat`, `Version` (unica fonte della versione).
+- `Sources/claude-meter-statusline/` — helper per Claude Code, va in `Contents/MacOS/` accanto all'app.
+- `Sources/ClaudeMeterApp/` — `MenuBarExtra` (.window): icona gauge SF Symbol + "23% · 41%"; pannello con
+  `RingGauge` (stessi colori/ritmo del display), statistiche, card di configurazione Claude Code
+  (missing / oursOutdated / other / unreadable), avvio al login (`SMAppService.mainApp`), sospendi collegamento
+  (per flashare il firmware), dati demo, rimuovi configurazione. `LSUIElement` = niente icona nel Dock.
+  `beginActivity` evita App Nap. `NSLog("claude-meter link: …")` per i cambi di stato del collegamento.
+- `scripts/build-app.sh` → `build/Claude Meter.app` (bundle id `com.mavrizio.claudemeter`; firma ad-hoc,
+  oppure `SIGN_ID=… UNIVERSAL=1` per Developer ID). `scripts/make-icon.swift` → `Resources/AppIcon.icns`.
+  Manca ancora `scripts/release.sh` (DMG + notarizzazione): copiarlo da `../sdclone/scripts/release.sh`.
+
+```bash
+cd macos
+swift build && swift test                       # 9 test MeterCore
+scripts/build-app.sh                            # crea build/Claude Meter.app
+open "build/Claude Meter.app"
+.build/debug/ClaudeMeterApp --snapshot /tmp/p   # PNG del pannello (chiaro/scuro) con dati demo, senza USB
+```
+Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app), poi `pio run -t upload`.
+
+## Host Python (`host/`) — legacy / sviluppo
 
 - `statusline.py` — nessuna dipendenza esterna. Comando registrato in `~/.claude/settings.json`:
   `"/Users/maurizio/Documents/GitHub/claude-meter/host/.venv/bin/python" ".../host/statusline.py"`.
@@ -118,10 +167,14 @@ Decodificare un crash: catturare il "Backtrace:" dalla seriale e
 ## Stato attuale (27 nov 2026)
 
 - ✅ Firmware v0.1.0 funzionante sulla scheda, grafica approvata dall'utente.
-- ✅ Dati reali collegati e verificati dall'utente (statusLine + LaunchAgent installati sul suo Mac).
+- ✅ Dati reali collegati e verificati dall'utente (prima con Python).
 - ✅ Repo GitHub **privato** `mavrizio/claude-meter`.
-- ⏭ Prossimo: **app macOS "Claude Meter"** (menu bar, SwiftUI) che sostituisce Python/LaunchAgent, per poter
-  regalare il dispositivo ad amici. Vedi [docs/roadmap.md](docs/roadmap.md).
+- ✅ App macOS v0.1.0 (build 1) creata, test superati, collegata al display sul Mac dell'utente.
+- Stato sul Mac dell'utente (27/11 sera): LaunchAgent Python **fermato e plist rimosso**; l'app gira da
+  `macos/build/Claude Meter.app`; la `statusLine` in settings.json punta **ancora a host/statusline.py**
+  (funziona: stesso state.json) → nel pannello compare "Aggiorna la configurazione" finché l'utente non clicca.
+- ⏭ Prossimi: feedback utente sull'app; `release.sh` (DMG notarizzato); installazione in /Applications +
+  avvio al login; decisione sulla fonte dati per chi usa solo la chat. Vedi [docs/roadmap.md](docs/roadmap.md).
 
 ## Convenzioni
 

@@ -50,3 +50,23 @@ per 45 s di animazioni continue. Lasciata la build `-DCM_DEBUG_HEAP` per diagnos
    per distribuire servirà un canale pubblico per i soli binari (vedi roadmap).
 3. **Regalarlo a un amico?** Vedi roadmap: dispositivo pre-flashato + cavo dati + app macOS firmata.
 4. **Memoria nel progetto**: questo file, `CLAUDE.md`, `docs/roadmap.md`, workspace `claude-meter.code-workspace`.
+
+### App macOS (stessa giornata, sera)
+- Richiesta: app Mac come per sdclone, dentro la stessa cartella (`macos/`), per regalare il display.
+- **Domanda dell'utente**: "per rinfrescare il display devo inviare un messaggio su Claude: sarà così anche
+  dopo? Il mio amico usa la chat". Risposta: sì, i percentuali arrivano solo quando Claude Code riceve una
+  risposta; l'uso dalla chat non è visibile finché Claude Code non risponde di nuovo. Indagate le alternative
+  (storico locale di Claude Desktop: troppo rado; endpoint interno: non documentato e con credenziali).
+  Decisione rimandata all'utente; l'app è progettata con fonti modulari.
+- Architettura app: MeterCore (testata) + helper statusLine Swift + app SwiftUI MenuBarExtra. Stesso
+  state.json e stesso protocollo della versione Python → compatibili, migrazione senza perdere dati.
+- Handshake: l'app parla a una porta solo dopo l'`hello` del firmware, per non disturbare altre schede
+  USB-seriale (Maurizio sviluppa molti firmware) e salta per 60 s le porte mute.
+- Verifica visiva del pannello senza poter cliccare la barra dei menu: opzione `--snapshot` che disegna il
+  pannello con dati demo in PNG chiaro/scuro.
+- **Errore commesso e corretto**: testando l'helper con `HOME=<cartella temporanea>`, i dati finti sono finiti
+  nel vero `~/.claude-meter/state.json` perché `homeDirectoryForCurrentUser` ignora `$HOME`. File rimosso
+  (si ripopola al primo messaggio di Claude Code), `MeterPaths.home` ora rispetta `$HOME`.
+- Migrazione sul Mac di Maurizio: LaunchAgent Python fermato e plist rimosso; app avviata da
+  `macos/build/`, collegata al display (hello in ~4 s). statusLine ancora sullo script Python finché
+  l'utente non clicca "Aggiorna" nel pannello.

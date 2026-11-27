@@ -4,3 +4,6 @@ firmware/.pio/
 firmware/.vscode/
 .DS_Store
 compile_commands.json
+macos/.build/
+macos/build/
+.swiftpm/
