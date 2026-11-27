@@ -6,10 +6,7 @@ with a signed macOS menu bar app. Documentation in Italian.*
 Un piccolo display da scrivania che mostra a colpo d'occhio quanto hai usato dei **limiti del tuo
 abbonamento Claude** (Pro, Max o Ultra), più un'app per la barra dei menu del Mac che lo alimenta.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/pannello-dark.png">
-  <img src="docs/images/pannello-light.png" width="340" alt="Il pannello dell'app Claude Meter: due anelli con la sessione di 5 ore e la settimana, statistiche e impostazioni">
-</picture>
+<img src="docs/images/display.jpg" width="700" alt="Il display claude-meter in una custodia rossa stampata in 3D: sessione 5 ore al 57%, settimana al 18%, con conto alla rovescia, contesto, costo e righe">
 
 ## Cosa mostra
 
@@ -43,15 +40,21 @@ Trascinala in Applicazioni e aprila. Nel pannello premi **Configura**: l'app agg
 di stato a Claude Code, dopo aver fatto un backup di `~/.claude/settings.json`. Poi attiva
 **Avvia al login**.
 
-**2. Firmware sulla scheda.** Per ora serve [PlatformIO](https://platformio.org/install/cli):
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/pannello-dark.png">
+  <img src="docs/images/pannello-light.png" width="300" alt="Il pannello dell'app Claude Meter: due anelli con la sessione di 5 ore e la settimana, statistiche e impostazioni">
+</picture>
 
-```bash
-cd firmware
-pio run -t upload
-```
+**2. Firmware sulla scheda.** Chiudi prima l'app (o premi "Sospendi collegamento"), perché tiene occupata
+la porta USB. Poi scegli uno dei due modi:
 
-Prima di caricare il firmware, chiudi l'app o premi "Sospendi collegamento", perché l'app tiene occupata
-la porta USB. In futuro sarà l'app stessa ad aggiornare il display (vedi la [roadmap](docs/roadmap.md)).
+- **Dal browser, senza installare niente.** Scarica `claude-meter-firmware-<versione>.bin` dalla stessa
+  release e aprilo con lo strumento web ufficiale di Espressif,
+  [esptool-js](https://espressif.github.io/esptool-js/). Serve Chrome o Edge. Premi "Connect", scegli la
+  porta `usbserial`, indica l'indirizzo **0x0** e il file, poi "Program".
+- **Da sorgente**, con [PlatformIO](https://platformio.org/install/cli): `cd firmware && pio run -t upload`.
+
+In futuro sarà l'app stessa ad aggiornare il display (vedi la [roadmap](docs/roadmap.md)).
 
 **3. Uso.** Collega il display, apri Claude Code e invia un messaggio: gli archi si riempiono dopo la prima
 risposta. L'icona nella barra dei menu mostra le stesse percentuali.
