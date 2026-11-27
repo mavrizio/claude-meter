@@ -22,3 +22,8 @@ Prova la grafica senza Claude: `host/.venv/bin/python host/meterd.py --demo` (fe
 Requisiti: abbonamento Claude Pro/Max/Ultra (i limiti non esistono con chiave API).
 
 Contesto completo per lo sviluppo: [CLAUDE.md](CLAUDE.md).
+
+## Licenza
+
+[MIT](LICENSE). Progetto indipendente, non affiliato ad Anthropic. Ispirato a
+[Blink](https://github.com/KfirLevy258/Blink), ma riscritto da zero.
