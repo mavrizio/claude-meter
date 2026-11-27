@@ -201,12 +201,21 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
 - ✅ Firmware v0.1.0 funzionante sulla scheda, grafica approvata dall'utente.
 - ✅ Dati reali collegati e verificati dall'utente (prima con Python).
 - ✅ Repo GitHub **privato** `mavrizio/claude-meter`.
-- ✅ App macOS v0.1.0 (build 1) creata, test superati, collegata al display sul Mac dell'utente.
-- Stato sul Mac dell'utente (27/11 sera): LaunchAgent Python **fermato e plist rimosso**; l'app gira da
-  `macos/build/Claude Meter.app`; la `statusLine` in settings.json punta **ancora a host/statusline.py**
-  (funziona: stesso state.json) → nel pannello compare "Aggiorna la configurazione" finché l'utente non clicca.
-- ⏭ Prossimi: feedback utente sull'app; `release.sh` (DMG notarizzato); installazione in /Applications +
-  avvio al login; decisione sulla fonte dati per chi usa solo la chat. Vedi [docs/roadmap.md](docs/roadmap.md).
+- ✅ App macOS v0.1.0 (build 1): finestra all'apertura, istanza unica, porta esclusiva, registro statusline.
+- ✅ **DMG 0.1.0 notarizzato** (Accepted, id 06371e9b) in `macos/build/release/ClaudeMeter-0.1.0.dmg`
+  (non in git; rigenerabile con `scripts/release.sh`).
+- Stato sul Mac dell'utente (27/11 ore 17): LaunchAgent Python rimosso; l'app di sviluppo gira da
+  `macos/build/Claude Meter.app`; la `statusLine` punta all'helper **dentro `macos/build/Claude Meter.app`**
+  (l'utente ha cliccato "Aggiorna"). "Avvia al login" spento. Se l'app viene installata in /Applications il
+  pannello mostrerà di nuovo "Aggiorna" (percorso cambiato): è normale, basta cliccare.
+  ⚠️ `scripts/build-app.sh` cancella e ricrea `build/Claude Meter.app`: chiudere prima l'app di sviluppo.
+- Verificato: il display si aggiorna **solo da Claude Code nel terminale**; il pannello VS Code non esegue la
+  statusLine. L'utente valuta `claudeCode.useTerminal`.
+- ⏭ Prossimi, da decidere con l'utente:
+  1. installare l'app in /Applications e attivare "Avvia al login";
+  2. provare il DMG su un altro Mac (kit regalo per l'amico);
+  3. fonte dati per chi usa solo la chat: nessuna ufficiale; l'endpoint interno **solo con un sì esplicito**;
+  4. idee firmware (touch, LED, luminosità automatica) e app (notifiche >90%). Vedi [docs/roadmap.md](docs/roadmap.md).
 
 ## Convenzioni
 
