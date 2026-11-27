@@ -72,7 +72,11 @@ Nota: la statusLine è aggiornata dalla CLI `claude`; da verificare se anche l'e
 - [x] **Touch** (XPT2046) per cambiare schermata — fw 0.2.0: tocco = pagina Dettaglio. Da fare: storico,
   impostazioni luminosità, silenziare il LED.
 - [x] **LED RGB** come allarme discreto (ambra >75%, rosso >90%), con PWM basso — fw 0.2.0.
-- [ ] **Retroilluminazione automatica** con LDR su GPIO 34; spegnimento quando il Mac è assente da molto.
+- [—] **Retroilluminazione automatica** con LDR su GPIO 34 — **scartata dall'utente** (27/11, "non mi serve").
+  Misurato: l'LDR legge 0–13 (su 4095, ADC a 0 dB) sia con luce normale sia con la scheda coperta e lo
+  schermo spento. Difetto noto della CYD: il circuito di fabbrica vede solo "luce piena" salvo buio assoluto;
+  si sistema solo in hardware (togliere R19, R15 → 47 kΩ, 0603) o schermando il sensore dalla retroilluminazione.
+  Fonti: forum.arduino.cc/t/cheap-yellow-display-ldr-sensor/1347942, witnessmenow/ESP32-Cheap-Yellow-Display Mods.
 - [x] Proiezione: "a questo ritmo arrivi al 100% alle 15:40" — nella pagina Dettaglio (fw 0.2.0).
 - [ ] Font personalizzati (lv_font_conv) con lettere accentate.
 - [ ] **WiFi** come trasporto alternativo (il Mac invia in LAN, discovery mDNS) — l'utente per ora va bene con USB.
