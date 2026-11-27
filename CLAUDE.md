@@ -128,6 +128,14 @@ Decodificare un crash: catturare il "Backtrace:" dalla seriale e
    (gitignored, 13 MB, rigenerabile con `pio run -t compiledb`).
 4. Aprire la seriale resetta l'ESP32 (circuito auto-reset su DTR/RTS): il daemon deve restare connesso;
    impostare `dtr=False, rts=False` prima di `open()`.
+6. **Icona nella barra dei menu invisibile**: sul MacBook Pro con la tacca, se ci sono molte icone quelle in
+   eccesso finiscono dietro la tacca (e macOS 26 può nasconderle dalle impostazioni Barra dei menu). Per questo
+   l'app **mostra il pannello in una finestra quando viene aperta** (non al login), una seconda copia risveglia
+   la prima ed esce (`SingleInstance`), e la porta seriale è aperta con `TIOCEXCL`: con l'app attiva
+   `pio run -t upload` fallisce con "Resource busy" → prima "Sospendi collegamento".
+   Su macOS 26 le finestre delle icone di stato appartengono a "Control Centre": CGWindowList non dice di chi sono.
+   Mai usare `osascript ... keystroke` nei test: richiede Accessibilità e colpisce l'app in primo piano.
+7. Certificato Developer ID usato: scade **01/02/2027** → rinnovarlo prima delle release successive.
 5. `FileManager.homeDirectoryForCurrentUser` **ignora `$HOME`**: un test con `HOME=/tmp/x` aveva scritto dati
    finti nel vero `~/.claude-meter/state.json`. `MeterPaths.home` ora usa `$HOME`. Nei test usare sempre
    una HOME temporanea **e verificare** che `~/.claude-meter/` reale non cambi.
