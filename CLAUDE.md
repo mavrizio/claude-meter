@@ -235,10 +235,10 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
 - ✅ **DMG 0.2.0 notarizzato** (27/11, Accepted, id 83acf0bc) in `macos/build/release/ClaudeMeter-0.2.0.dmg`
   (non in git; `scripts/release.sh` lo rigenera e **cancella** `build/release/`, quindi anche i DMG
   precedenti). Il Leggimi spiega la privacy dell'opzione account.
-- Stato sul Mac dell'utente (27/11 ore 17:10): LaunchAgent Python rimosso; **app 0.1.0 installata in
-  `/Applications/Claude Meter.app`** dal DMG notarizzato, **"Avvia al login" attivo** (SMAppService, abilitato);
+- Stato sul Mac dell'utente (27/11 ore 17:10): LaunchAgent Python rimosso; **app 0.2.0 installata in
+  `/Applications/Claude Meter.app`** dal DMG notarizzato (opzione "Limiti dal tuo account" **attiva**), **"Avvia al login" attivo** (SMAppService, abilitato);
   la `statusLine` punta a `/Applications/Claude Meter.app/Contents/MacOS/claude-meter-statusline`
-  (backup `settings.json.bak-claude-meter-20261127-170829`). La copia in `macos/build/` resta solo per
+  (ultimo backup `settings.json.bak-claude-meter-20261127-175542`). La copia in `macos/build/` resta solo per
   sviluppo: **mai aprirla insieme a quella installata** (porta USB esclusiva). Se si prova una build di
   sviluppo, il pannello mostrerà "Aggiorna" (percorso diverso): ricordarsi di ripuntare a /Applications.
   ⚠️ `scripts/build-app.sh` cancella e ricrea `build/Claude Meter.app`: chiudere prima l'app di sviluppo.
