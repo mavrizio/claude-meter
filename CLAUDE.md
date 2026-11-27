@@ -231,7 +231,9 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
 - ✅ Firmware **v0.2.1** (27/11) sulla scheda: LED allarme (silenziabile col tocco lungo) + touch con pagina
   Dettaglio, verificato dall'utente. Luminosità automatica scartata (LDR inutilizzabile, vedi roadmap).
 - ✅ Dati reali collegati e verificati dall'utente (prima con Python).
-- ✅ Repo GitHub **privato** `mavrizio/claude-meter`.
+- ✅ Repo GitHub **pubblico** (dal 27/11) `mavrizio/claude-meter`, licenza MIT. Storia riscritta: i commit usano
+  l'email anonima `6154695+mavrizio@users.noreply.github.com` (impostata in `git config` **locale** del repo;
+  quella globale è l'email di lavoro, da non usare qui). Mai committare segreti né l'email di lavoro.
 - ✅ App macOS v0.1.0 (build 1): finestra all'apertura, istanza unica, porta esclusiva, registro statusline.
 - ✅ App macOS **v0.2.0** (build 2): opzione sperimentale "Limiti dal tuo account" + intervallo regolabile.
 - ✅ App macOS **v0.2.1** (build 3): ritentativi rapidi dopo login/risveglio/rete assente.

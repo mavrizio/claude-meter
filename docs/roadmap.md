@@ -76,9 +76,8 @@ consegnare la seconda unità, altrimenti ogni correzione richiede di riprendere 
   protocollo del ROM bootloader ESP32 (scritto in Swift, nessun esptool/Python sull'altro Mac). Reset in
   bootloader via DTR/RTS. Sicuro: il ROM bootloader non si cancella, un caricamento interrotto si ripete.
   Serve solo l'app a 0x10000 se bootloader e partizioni non cambiano. Nessuna OTA Wi-Fi: `huge_app.csv` va bene.
-- [ ] **Dove pubblicare** DMG e feed: il repo `mavrizio/claude-meter` è privato e un'app installata altrove
-  non può leggerlo. Opzioni: rendere pubblico il repo (l'utente è favorevole, 27/11) oppure un repo pubblico
-  separato solo per le release (`claude-meter-releases`).
+- [x] **Dove pubblicare** DMG e feed: il repo `mavrizio/claude-meter` è **pubblico** dal 27/11 (licenza MIT):
+  DMG come GitHub Release, feed Sparkle come asset della release o su GitHub Pages.
 - [ ] GitHub Actions (facoltativo): compilare firmware e app ad ogni tag. La notarizzazione richiede le
   credenziali Apple: più semplice continuare a fare le release in locale con `release.sh`.
 - Stima: ~mezza giornata Sparkle, ~1 giornata caricamento firmware dall'app.
