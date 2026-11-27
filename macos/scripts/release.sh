@@ -65,9 +65,17 @@ Claude Meter $VERSION
 4. Apri Claude Code nel terminale ("claude"), anche dentro VS Code, e invia un
    messaggio: i limiti compaiono dopo la prima risposta.
 5. Nel pannello attiva "Avvia al login".
+6. Facoltativo: "Limiti dal tuo account (sperimentale)" mostra anche l'uso fatto
+   dalla chat (claude.ai, app Desktop, telefono). Vedi sotto.
 
 Requisiti: macOS 14 o successivo, Claude Code con abbonamento Pro, Max o Ultra.
-I dati restano sul tuo Mac: Claude Meter non usa account, password o Internet.
+
+Privacy: di base Claude Meter non usa Internet e i dati restano sul tuo Mac.
+Solo se attivi "Limiti dal tuo account", ogni pochi minuti chiede le percentuali
+d'uso ad Anthropic (lo stesso servizio, non documentato, usato da /usage di Claude
+Code), con l'accesso di Claude Code salvato nel portachiavi. L'accesso non viene
+copiato, salvato o inviato altrove. Il servizio potrebbe cambiare: in quel caso
+l'opzione smette di funzionare e si torna ai dati di Claude Code.
 Per disinstallare: nel pannello, menu "..." > "Rimuovi configurazione da Claude Code",
 poi trascina l'app nel Cestino.
 TXT

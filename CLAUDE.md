@@ -231,8 +231,10 @@ Per flashare il firmware: "Sospendi collegamento" nel pannello (o chiudere l'app
 - ✅ Dati reali collegati e verificati dall'utente (prima con Python).
 - ✅ Repo GitHub **privato** `mavrizio/claude-meter`.
 - ✅ App macOS v0.1.0 (build 1): finestra all'apertura, istanza unica, porta esclusiva, registro statusline.
-- ✅ **DMG 0.1.0 notarizzato** (Accepted, id 06371e9b) in `macos/build/release/ClaudeMeter-0.1.0.dmg`
-  (non in git; rigenerabile con `scripts/release.sh`).
+- ✅ App macOS **v0.2.0** (build 2): opzione sperimentale "Limiti dal tuo account" + intervallo regolabile.
+- ✅ **DMG 0.2.0 notarizzato** (27/11, Accepted, id 83acf0bc) in `macos/build/release/ClaudeMeter-0.2.0.dmg`
+  (non in git; `scripts/release.sh` lo rigenera e **cancella** `build/release/`, quindi anche i DMG
+  precedenti). Il Leggimi spiega la privacy dell'opzione account.
 - Stato sul Mac dell'utente (27/11 ore 17:10): LaunchAgent Python rimosso; **app 0.1.0 installata in
   `/Applications/Claude Meter.app`** dal DMG notarizzato, **"Avvia al login" attivo** (SMAppService, abilitato);
   la `statusLine` punta a `/Applications/Claude Meter.app/Contents/MacOS/claude-meter-statusline`
